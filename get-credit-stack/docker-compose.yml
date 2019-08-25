@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:11-alpine
+    environment:
+      - POSTGRES_DB=getcredit
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - getcredit-net
+
+  get-credit-ui:
+    image: arkanjoms/get-credit-ui
+    networks:
+      - getcredit-net
+
+  get-credit-api:
+    image: arkanjoms/get-credit-api
+    links:
+      - postgres
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/getcredit
+      - GET_CREDIT_ANALYSIS_API_URL=http://get-credit-analysis-api:8080/get-credit-analysis-api
+    networks:
+      - getcredit-net
+
+  get-credit-analysis-api:
+    image: arkanjoms/get-credit-analysis-api
+    environment:
+      - SERVER_PORT=8080
+    networks:
+      - getcredit-net
+
+  get-credit-reverse-proxy:
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+    links:
+      - get-credit-analysis-api
+      - get-credit-api
+      - get-credit-ui
+    volumes:
+      - ./reverse-proxy/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - getcredit-net
+
+volumes:
+  pg-data:
+
+networks:
+  getcredit-net:

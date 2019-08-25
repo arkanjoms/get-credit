@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: getcredit
+      changes:
+        - sqlFile:
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: true
+            path: scripts/schema.sql
